@@ -7,6 +7,10 @@ import {
   isValidGASWebAppExecUrl,
   SEARCH_DEBOUNCE_MS,
   AUTOCOMPLETE_MAX,
+  DASHBOARD_AUTH_DISABLED,
+  AUTH_SESSION_STORAGE_KEY,
+  AUTH_SESSION_VALUE,
+  dashboardCredentialsMatch,
 } from "./config.js";
 import { fetchVolunteerSheet } from "./api.js";
 import {
@@ -24,6 +28,12 @@ let modalVolunteer = null;
 let activeAutocompleteIndex = -1;
 
 const els = {
+  loginGate: document.getElementById("login-gate"),
+  loginForm: /** @type {HTMLFormElement | null} */ (document.getElementById("login-form")),
+  loginUsername: /** @type {HTMLInputElement | null} */ (document.getElementById("login-username")),
+  loginPassword: /** @type {HTMLInputElement | null} */ (document.getElementById("login-password")),
+  loginError: document.getElementById("login-error"),
+  appRoot: document.getElementById("app"),
   search: /** @type {HTMLInputElement} */ (document.getElementById("search-input")),
   autocomplete: document.getElementById("autocomplete-list"),
   filterGender: /** @type {HTMLSelectElement} */ (document.getElementById("filter-gender")),
@@ -36,6 +46,7 @@ const els = {
   apiSetup: document.getElementById("api-setup"),
   apiUrlInput: /** @type {HTMLInputElement | null} */ (document.getElementById("api-url-input")),
   apiUrlSave: document.getElementById("api-url-save"),
+  btnLogout: document.getElementById("btn-logout"),
   btnRefresh: document.getElementById("btn-refresh"),
   btnExcel: document.getElementById("btn-excel-office"),
   modal: document.getElementById("modal"),
@@ -374,6 +385,17 @@ function wireEvents() {
   els.filterGender.addEventListener("change", () => renderTable());
   els.filterOffice.addEventListener("change", () => renderTable());
 
+  if (els.btnLogout) {
+    els.btnLogout.addEventListener("click", () => {
+      try {
+        sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+      } catch {
+        // تجاهل
+      }
+      window.location.reload();
+    });
+  }
+
   els.btnRefresh.addEventListener("click", () => {
     if (!isGoogleScriptUrlConfigured()) {
       if (els.apiSetup) els.apiSetup.classList.remove("hidden");
@@ -436,8 +458,71 @@ function wireEvents() {
   });
 }
 
-function init() {
-  wireEvents();
+function hasAuthSession() {
+  try {
+    return sessionStorage.getItem(AUTH_SESSION_STORAGE_KEY) === AUTH_SESSION_VALUE;
+  } catch {
+    return false;
+  }
+}
+
+function showDashboardShell() {
+  if (els.loginGate) els.loginGate.classList.add("hidden");
+  if (els.appRoot) {
+    els.appRoot.classList.remove("hidden");
+    els.appRoot.removeAttribute("aria-hidden");
+  }
+}
+
+function showLoginShell() {
+  if (els.loginGate) els.loginGate.classList.remove("hidden");
+  if (els.appRoot) {
+    els.appRoot.classList.add("hidden");
+    els.appRoot.setAttribute("aria-hidden", "true");
+  }
+}
+
+function setLoginError(msg) {
+  if (!els.loginError) return;
+  if (msg) {
+    els.loginError.textContent = msg;
+    els.loginError.classList.remove("hidden");
+  } else {
+    els.loginError.textContent = "";
+    els.loginError.classList.add("hidden");
+  }
+}
+
+function wireLoginForm() {
+  if (!els.loginForm || !els.loginUsername || !els.loginPassword) return;
+  els.loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    setLoginError("");
+    const u = els.loginUsername.value;
+    const p = els.loginPassword.value;
+    if (!dashboardCredentialsMatch(u, p)) {
+      setLoginError("اسم المستخدم أو كلمة المرور غير صحيحة.");
+      return;
+    }
+    try {
+      sessionStorage.setItem(AUTH_SESSION_STORAGE_KEY, AUTH_SESSION_VALUE);
+    } catch {
+      setLoginError("تعذر حفظ الجلسة. تحقق من إعدادات المتصفح.");
+      return;
+    }
+    els.loginPassword.value = "";
+    showDashboardShell();
+    startDashboard();
+  });
+}
+
+let dashboardWired = false;
+
+function startDashboard() {
+  if (!dashboardWired) {
+    wireEvents();
+    dashboardWired = true;
+  }
   if (!isGoogleScriptUrlConfigured()) {
     setError("");
     if (els.apiSetup) els.apiSetup.classList.remove("hidden");
@@ -446,6 +531,23 @@ function init() {
     if (els.apiSetup) els.apiSetup.classList.add("hidden");
     loadData();
   }
+}
+
+function init() {
+  if (DASHBOARD_AUTH_DISABLED) {
+    if (els.btnLogout) els.btnLogout.classList.add("hidden");
+    showDashboardShell();
+    startDashboard();
+    return;
+  }
+  if (hasAuthSession()) {
+    showDashboardShell();
+    startDashboard();
+    return;
+  }
+  showLoginShell();
+  wireLoginForm();
+  if (els.loginUsername) els.loginUsername.focus();
 }
 
 init();

@@ -133,3 +133,28 @@ export const SEARCH_DEBOUNCE_MS = 250;
 
 /** حد اقتراحات الـ Autocomplete */
 export const AUTOCOMPLETE_MAX = 12;
+
+/**
+ * تسجيل دخول للوحة (تحقق في المتصفح فقط — اسم المستخدم وكلمة المرور تظهران في ملفات JS المنشورة).
+ * غيّر القيم أدناه. لتعطيل الشاشة بالكامل: DASHBOARD_AUTH_DISABLED = true
+ */
+export const DASHBOARD_AUTH_DISABLED = false;
+
+export const DASHBOARD_LOGIN_USERNAME = "gençihhs12";
+
+export const DASHBOARD_LOGIN_PASSWORD = "gençihhs12";
+
+export const AUTH_SESSION_STORAGE_KEY = "VOLUNTEER_DASHBOARD_AUTH";
+
+export const AUTH_SESSION_VALUE = "1";
+
+/**
+ * @param {string} username
+ * @param {string} password
+ * @returns {boolean}
+ */
+export function dashboardCredentialsMatch(username, password) {
+  const u = (username || "").trim();
+  const p = password != null ? String(password) : "";
+  return u === String(DASHBOARD_LOGIN_USERNAME).trim() && p === String(DASHBOARD_LOGIN_PASSWORD);
+}
