@@ -17,7 +17,7 @@
  *
  * للاختبار السريع من الرابط: ?gscript=ENCODED_URL
  *
- * إذا ظهر «Failed to fetch» من المتصفح: شغّل من مجلد volunteer-dashboard
+ * إذا ظهر «Failed to fetch» من المتصفح: من جذر المشروع شغّل
  *   node dev-server.cjs
  * ثم افتح http://127.0.0.1:8080 — الخادم يمرّر طلبات GAS عبر /api/sheet (بدون CORS).
  */

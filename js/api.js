@@ -255,7 +255,7 @@ export async function fetchVolunteerSheet() {
     } catch {
       throw new Error(
         isLocalDevHostname()
-          ? "تعذر الاتصال. تأكد من: ① **node dev-server.cjs** من جذر المشروع (أو volunteer-dashboard) " +
+          ? "تعذر الاتصال. تأكد من: ① **node dev-server.cjs** من جذر المشروع " +
             "وافتح **نفس** المنفذ (مثلاً http://127.0.0.1:8080 إن استخدمت PORT=8080). ② " +
             "**Who has access = Anyone** في نشر GAS. ③ أوقف `npx serve` إن كان نفس المنفذ. " +
             `(${String(err && err.message ? err.message : err)})`
