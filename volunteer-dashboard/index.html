@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة إدارة المتطوعين</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="header-top">
+          <h1 class="app-title">إدارة بيانات المتطوعين</h1>
+          <div class="header-actions">
+            <button type="button" id="btn-refresh" class="btn btn-secondary" title="إعادة جلب البيانات">
+              <span class="icon" aria-hidden="true">↻</span>
+              تحديث
+            </button>
+            <button type="button" id="btn-excel-office" class="btn btn-primary" title="تصدير Excel للمكتب المحدد">
+              <span class="icon" aria-hidden="true">⬇</span>
+              تحميل Excel حسب المكتب
+            </button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <label for="search-input" class="visually-hidden">بحث</label>
+            <input
+              type="search"
+              id="search-input"
+              class="search-input"
+              placeholder="ابحث بالاسم، الهاتف، أو البريد…"
+              autocomplete="off"
+              dir="auto"
+            />
+            <ul id="autocomplete-list" class="autocomplete-list hidden" role="listbox" aria-label="اقتراحات الأسماء"></ul>
+          </div>
+
+          <div class="filters">
+            <div class="filter-group">
+              <label for="filter-gender" class="filter-label">الجنس</label>
+              <select id="filter-gender" class="select">
+                <option value="all">الكل</option>
+                <option value="male">ذكور</option>
+                <option value="female">إناث</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-office" class="filter-label">المكتب</label>
+              <select id="filter-office" class="select">
+                <option value="all">الكل</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div id="status-bar" class="status-bar" role="status" aria-live="polite"></div>
+
+      <main class="main-content">
+        <div id="loading-overlay" class="loading-overlay hidden" aria-hidden="true">
+          <div class="spinner" aria-label="جاري التحميل"></div>
+          <p>جاري تحميل البيانات…</p>
+        </div>
+
+        <p id="error-message" class="error-message hidden" role="alert"></p>
+
+        <div id="api-setup" class="api-setup hidden" role="region" aria-label="ربط Google Apps Script">
+          <p class="api-setup-title">ربط بيانات الجدول</p>
+          <p class="api-setup-hint">
+            انسخ رابط Web app (ينتهي بـ <code>exec</code>). إن ظهر خطأ 302 أو تسجيل دخول، راجع إعدادات
+            النشر في Apps Script (Execute as: Me، Who has access: Anyone).
+          </p>
+          <div class="api-setup-row">
+            <input
+              type="url"
+              id="api-url-input"
+              class="api-setup-input"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              dir="ltr"
+              autocomplete="off"
+            />
+            <button type="button" id="api-url-save" class="btn btn-primary">حفظ وتحميل</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table" id="data-table">
+            <thead>
+              <tr>
+                <th>الاسم</th>
+                <th>الهاتف</th>
+                <th>الجنس</th>
+                <th>المكتب</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr>
+                <td colspan="5" class="table-placeholder">غير متوفر بيانات حتى تُحمّل من الخادم.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="row-count" id="row-count" aria-live="polite"></p>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal-backdrop" class="modal-backdrop hidden" role="presentation"></div>
+    <div
+      id="modal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div class="modal-header">
+        <h2 id="modal-title" class="modal-title">تفاصيل المتطوع</h2>
+        <button type="button" id="modal-close" class="btn-icon" aria-label="إغلاق">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" id="btn-pdf" class="btn btn-primary">تحميل PDF</button>
+        <button type="button" id="modal-close-footer" class="btn btn-secondary">إغلاق</button>
+      </div>
+    </div>
+
+    <!-- jsPDF: يُستخدم مع Canvas داخل export.js لدعم النص العربي -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
